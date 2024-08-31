@@ -7,6 +7,15 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace TShape
 {
+    //Seccionar los objetos por partes //teoricamente hecho
+    //Escenario->Objeto->Partes->Poligono  //teoricamente hecho
+    //Centro de Masa   //teoricamente hecho
+    //Lista De Vertices //teoricamente hecho
+    //Con cada dibujar de la subparte, acarreo las traslaciones //teoricamente hecho
+    //Investigar serializacion //aun no
+    //Adicionar,eliminar,obtener partes  //aun no
+    //Implentacion  por interfaz  //definitivamente no, investigar como hacer una interfaz en C
+
     public class Game:GameWindow
     {
 
@@ -31,9 +40,9 @@ namespace TShape
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
 
-            t = new();
-            c = new();
-            c.scale(0.05f, 0.05f, 0.05f);
+            t = new(0.0f, 0.0f, 0.0f);
+            t.forgot(0.0f, 0.0f, 0.0f, "Center");
+            t.escenario.objetos["Center"].scale(0.05f, 0.05f, 0.05f);
 
             shader = new Shader("../../../shader.vert", "../../../shader.frag");
             shader.Use();
@@ -45,7 +54,7 @@ namespace TShape
             projection = Matrix4.Identity*Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X/(float)Size.Y, 0.1f, 100.0f);
 
             CursorState = CursorState.Grabbed;
-
+            shader.SetMatrix4("projection", projection);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -53,8 +62,8 @@ namespace TShape
             base.OnRenderFrame(args);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            t.draw(shader, camara.GetViewMatrix(), projection);
-            c.draw(shader, camara.GetViewMatrix(), projection);
+            shader.SetMatrix4("view", camara.GetViewMatrix());
+            t.escenario.Draw(shader);
             shader.Use();
             SwapBuffers();
 
@@ -111,7 +120,7 @@ namespace TShape
             }
             if (KeyboardState.IsKeyDown(Keys.P))
             {
-                t.move(camara.Position.X,camara.Position.Y,camara.Position.Z-3.0f);
+                t.escenario.objetos["TShape"].move(camara.Position.X,camara.Position.Y,camara.Position.Z-3.0f);
             }
             const float sensitivity = 0.2f;
 
