@@ -1,20 +1,23 @@
-﻿using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using OpenTK.Mathematics;
+using System.Runtime.Serialization;
 
-namespace ConsoleApp1
+namespace TShape
 {
-    internal class Objeto
+    [JsonObjectAttribute]
+    public class Objeto
     {
         public Dictionary<string, Parte> partes=new();
+        public float posX, posY, posZ = 0.0f;
         private Matrix4 pos;
+
         public Objeto(float posX = 0.0f, float posY = 0.0f, float posZ = 0.0f)
         {
-            pos = Matrix4.Identity * Matrix4.CreateTranslation(posX, posY, posZ);
+            this.posX = posX; this.posY = posY; this.posZ = posZ;
+            GenMatrix(new StreamingContext());
         }
+        [OnDeserialized]
+        private void GenMatrix(StreamingContext context) { pos = Matrix4.CreateTranslation(posX, posY, posZ); }
         public void Draw(Shader shader, Matrix4 model)
         {
             foreach (Parte parte in partes.Values)

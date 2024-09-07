@@ -1,23 +1,24 @@
-﻿using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OpenTK.Mathematics;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
-namespace ConsoleApp1
+namespace TShape
 {
-    internal class Escenario
+    [JsonObjectAttribute]
+    public class Escenario
     {
         public Dictionary<string, Objeto> objetos=new();
+        public float posX, posY, posZ = 0.0f;
         private Matrix4 pos;
+
 
         public Escenario(float posX = 0.0f, float posY = 0.0f, float posZ = 0.0f)
         {
-            pos=Matrix4.Identity*Matrix4.CreateTranslation(posX,posY,posZ);
+            this.posX = posX; this.posY = posY; this.posZ = posZ;
+            GenMatrix(new StreamingContext());
         }
+        [OnDeserialized]
+        private void GenMatrix (StreamingContext context) { pos = Matrix4.CreateTranslation(posX, posY, posZ); }
         public void Draw(Shader shader)
         {
             foreach (Objeto objeto in objetos.Values)
@@ -25,6 +26,5 @@ namespace ConsoleApp1
                 objeto.Draw(shader, pos);
             }
         }
-
     }
 }

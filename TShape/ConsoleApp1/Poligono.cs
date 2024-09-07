@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-namespace ConsoleApp1
+
+namespace TShape
 {
-    internal class Poligono
+    public class Poligono
     {
-        private float[] vertices;
-        private uint[] indices = { 0, 1, 2, 1, 2, 3 };
+        public float[] vertices;
+        public float posX,posY,posZ=0.0f;
+        private uint[] indices = {0, 1, 2, 1, 2, 3};
 
         private Matrix4 pos;
         private int ElementBufferObject;
@@ -23,7 +20,7 @@ namespace ConsoleApp1
                         float v1x, float v1y, float v1z, float v1cR, float v1cG, float v1cB,
                         float v2x, float v2y, float v2z, float v2cR, float v2cG, float v2cB,
                         float v3x, float v3y, float v3z, float v3cR, float v3cG, float v3cB,
-                        float posX = 0.0f, float posY = 0.0f, float posZ = 0.0f)
+                        float posX=0.0f, float posY = 0.0f, float posZ = 0.0f)
         {
             vertices = new float[24];
             vertices[0] = v0x;
@@ -53,7 +50,12 @@ namespace ConsoleApp1
             vertices[21] = v3cR;
             vertices[22] = v3cG;
             vertices[23] = v3cB;
-
+            this.posX = posX;this.posY = posY;this.posZ = posZ;
+            Cargar(new StreamingContext());
+        }
+        [OnDeserialized]
+        public void Cargar(StreamingContext context)
+        {
             VertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(VertexArrayObject);
 
@@ -70,16 +72,14 @@ namespace ConsoleApp1
 
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
-
-            pos = Matrix4.Identity * Matrix4.CreateTranslation(posX, posY, posZ);
-
+            pos = Matrix4.CreateTranslation(posX, posY, posZ);
         }
 
         public void Draw(Shader shader, Matrix4 model)
         {
             GL.BindVertexArray(VertexArrayObject);
             shader.Use();
-            shader.SetMatrix4("model", pos*model);
+            shader.SetMatrix4("model", pos * model);
             GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 

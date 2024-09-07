@@ -29,3 +29,4 @@ D:\Santiago\ProGraficaII\TShape\ConsoleApp1\obj\Debug\net8.0\refint\ConsoleApp1.
 D:\Santiago\ProGraficaII\TShape\ConsoleApp1\obj\Debug\net8.0\ConsoleApp1.pdb
 D:\Santiago\ProGraficaII\TShape\ConsoleApp1\obj\Debug\net8.0\ConsoleApp1.genruntimeconfig.cache
 D:\Santiago\ProGraficaII\TShape\ConsoleApp1\obj\Debug\net8.0\ref\ConsoleApp1.dll
+D:\Santiago\ProGraficaII\TShape\ConsoleApp1\bin\Debug\net8.0\Newtonsoft.Json.dll

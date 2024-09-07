@@ -1,5 +1,4 @@
-﻿using ConsoleApp1;
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -7,19 +6,15 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace TShape
 {
-    //Seccionar los objetos por partes //teoricamente hecho
-    //Escenario->Objeto->Partes->Poligono  //teoricamente hecho
-    //Centro de Masa   //teoricamente hecho
-    //Lista De Vertices //teoricamente hecho
-    //Con cada dibujar de la subparte, acarreo las traslaciones //teoricamente hecho
     //Investigar serializacion //aun no
-    //Adicionar,eliminar,obtener partes  //aun no
     //Implentacion  por interfaz  //definitivamente no, investigar como hacer una interfaz en C
 
+    //serializar
+    //sacar los vertices fuera, en un archivo
     public class Game:GameWindow
     {
 
-        private TObject t,c;
+        private Escenario t;
         private Shader shader;
         private Camera camara;
 
@@ -39,11 +34,12 @@ namespace TShape
             base.OnLoad();
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
-
+            //TObject.Serialize(TObject.Ts(), "TShape");
             t = new(0.0f, 0.0f, 0.0f);
-            t.forgot(0.0f, 0.0f, 0.0f, "Center");
-            t.escenario.objetos["Center"].scale(0.05f, 0.05f, 0.05f);
-
+            t.objetos.Add("TShape", TObject.LoadObject<Objeto>("../../../assets/objects/TShape.json"));
+            t.objetos.Add("Center", TObject.LoadObject<Objeto>("../../../assets/objects/TShape.json"));
+            t.objetos["Center"].scale(0.05f, 0.05f, 0.05f);
+            
             shader = new Shader("../../../shader.vert", "../../../shader.frag");
             shader.Use();
 
@@ -52,9 +48,9 @@ namespace TShape
             camara = new Camera(Vector3.UnitZ * 3);
 
             projection = Matrix4.Identity*Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X/(float)Size.Y, 0.1f, 100.0f);
+            shader.SetMatrix4("projection", projection);
 
             CursorState = CursorState.Grabbed;
-            shader.SetMatrix4("projection", projection);
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -63,10 +59,9 @@ namespace TShape
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             shader.SetMatrix4("view", camara.GetViewMatrix());
-            t.escenario.Draw(shader);
+            t.Draw(shader);
             shader.Use();
             SwapBuffers();
-
         }
 
         protected override void OnFramebufferResize(FramebufferResizeEventArgs args)
@@ -120,7 +115,7 @@ namespace TShape
             }
             if (KeyboardState.IsKeyDown(Keys.P))
             {
-                t.escenario.objetos["TShape"].move(camara.Position.X,camara.Position.Y,camara.Position.Z-3.0f);
+                t.objetos["TShape"].move(camara.Position.X,camara.Position.Y,camara.Position.Z-3.0f);
             }
             const float sensitivity = 0.2f;
 

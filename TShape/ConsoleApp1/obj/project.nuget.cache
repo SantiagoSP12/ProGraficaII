@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "ajynGxWDZOvshFkX0/n4UH9Jb+HjcZ/VHsfUDCfDaalnB3zJjj8OiI3b7guv0JtweMNt3X206wXSD70Pm97a7g==",
+  "dgSpecHash": "dZYCaDYQBMgI3520mk9pvVTK/vW/6vbRMW9EH/6qzXMSv6vrJloG2NO31Lwa5JLF8x3n/fq9s/OP85MfEXKKfw==",
   "success": true,
   "projectFilePath": "D:\\Santiago\\ProGraficaII\\TShape\\ConsoleApp1\\ConsoleApp1.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Santiago\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\Santiago\\.nuget\\packages\\opentk\\4.8.2\\opentk.4.8.2.nupkg.sha512",
     "C:\\Users\\Santiago\\.nuget\\packages\\opentk.audio.openal\\4.8.2\\opentk.audio.openal.4.8.2.nupkg.sha512",
     "C:\\Users\\Santiago\\.nuget\\packages\\opentk.compute\\4.8.2\\opentk.compute.4.8.2.nupkg.sha512",
