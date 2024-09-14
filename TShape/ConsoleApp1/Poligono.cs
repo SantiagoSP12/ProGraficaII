@@ -8,10 +8,8 @@ namespace TShape
     {
         public float[] vertices;
         public float posX,posY,posZ=0.0f;
-        private uint[] indices = {0, 1, 2, 1, 2, 3};
-
         private Matrix4 pos;
-        private int ElementBufferObject;
+
         private int VertexBufferObject;
         private int VertexArrayObject;
         public Poligono() { }
@@ -23,33 +21,18 @@ namespace TShape
                         float posX=0.0f, float posY = 0.0f, float posZ = 0.0f)
         {
             vertices = new float[24];
-            vertices[0] = v0x;
-            vertices[1] = v0y;
-            vertices[2] = v0z;
-            vertices[3] = v0cR;
-            vertices[4] = v0cG;
-            vertices[5] = v0cB;
+            vertices[0] = v0x; vertices[1] = v0y; vertices[2] = v0z;
+            vertices[3] = v0cR; vertices[4] = v0cG; vertices[5] = v0cB;
 
-            vertices[6] = v1x;
-            vertices[7] = v1y;
-            vertices[8] = v1z;
-            vertices[9] = v1cR;
-            vertices[10] = v1cG;
-            vertices[11] = v1cB;
+            vertices[6] = v1x; vertices[7] = v1y; vertices[8] = v1z;
+            vertices[9] = v1cR; vertices[10] = v1cG; vertices[11] = v1cB;
 
-            vertices[12] = v2x;
-            vertices[13] = v2y;
-            vertices[14] = v2z;
-            vertices[15] = v2cR;
-            vertices[16] = v2cG;
-            vertices[17] = v2cB;
+            vertices[12] = v2x; vertices[13] = v2y; vertices[14] = v2z;
+            vertices[15] = v2cR; vertices[16] = v2cG; vertices[17] = v2cB;
 
-            vertices[18] = v3x;
-            vertices[19] = v3y;
-            vertices[20] = v3z;
-            vertices[21] = v3cR;
-            vertices[22] = v3cG;
-            vertices[23] = v3cB;
+            vertices[18] = v3x; vertices[19] = v3y; vertices[20] = v3z;
+            vertices[21] = v3cR; vertices[22] = v3cG; vertices[23] = v3cB;
+
             this.posX = posX;this.posY = posY;this.posZ = posZ;
             Cargar(new StreamingContext());
         }
@@ -62,10 +45,6 @@ namespace TShape
             VertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-            ElementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
@@ -80,9 +59,7 @@ namespace TShape
             GL.BindVertexArray(VertexArrayObject);
             shader.Use();
             shader.SetMatrix4("model", pos * model);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
         }
-
-
     }
 }
