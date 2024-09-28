@@ -65,8 +65,7 @@ namespace TShape
              0.0f, 1.0f, -0.5f,  1.0f, 1.0f, 1.0f,
              0.0f, 1.0f,  0.5f,  0.0f, 0.0f, 0.0f,
              0.0f,-1.0f,  0.5f,  0.0f, 0.0f, 0.0f,
-             0.0f,-1.0f, -0.5f,  1.0f, 1.0f, 1.0f,
-
+             0.0f,-1.0f, -0.5f,  1.0f, 1.0f, 1.0f
         };
         public static void Serialize<T>(T Object, string nombre)
         {

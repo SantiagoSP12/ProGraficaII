@@ -3,7 +3,6 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using System.Security.AccessControl;
 
 namespace TShape
 {
@@ -26,7 +25,7 @@ namespace TShape
         private Shader shader;
         private Camera camara;
 
-        float speed = 1.5f;
+        float speed = 0.005f;
 
         Matrix4 projection;
         Vector2 lastPos;
@@ -41,7 +40,9 @@ namespace TShape
         string parteActual;
         string selected_transformation;
         string sujetoActual;
-        char direccionActual;
+        sbyte direccionActual;
+
+        InterfazObjeto target;
 
         public Game(int width, int height, string title):base(GameWindowSettings.Default,
             new NativeWindowSettings() {Size=(width,height), Title=title})
@@ -53,39 +54,41 @@ namespace TShape
             base.OnLoad();
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             GL.Enable(EnableCap.DepthTest);
-            t = new(0.0f, 0.0f, 0.0f);
+
             t = TObject.LoadObject<Escenario>("Escenario");
             t.objetos.Add("Center", TObject.LoadObject<Objeto>("TShape"));
+            t.objetos["Center"].setPos(0,0,0);
             t.objetos["Center"].scale(0.05f, 0.05f, 0.05f);
             
-            iniciarDisplayTemporal();
+            iniciarInterfazTemporal();
 
 
             shader = new Shader("../../../shader.vert", "../../../shader.frag");
             shader.Use();
 
             speed = 1.5f;
-
             camara = new Camera(Vector3.UnitZ * 3);
 
             projection = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(45.0f), Size.X / (float)Size.Y, 0.1f, 100.0f);
             shader.SetMatrix4("projection", projection);
 
             CursorState = CursorState.Grabbed;
+            displayTemporal();
+
+            target = t;
         }
 
-        private void iniciarDisplayTemporal()
+        private void iniciarInterfazTemporal()
         {
             nombreEfectos = ["Rotacion", "Escalacion", "Traslacion"];
-            sujetosDePrueba = ["Objeto", "Parte"];
+            sujetosDePrueba = ["Escenario", "Objeto", "Parte"];
             nombreObjetos = new List<string>(t.objetos.Keys);
             sujetoActual = sujetosDePrueba.ElementAtOrDefault(0);
             selected_transformation = nombreEfectos.ElementAtOrDefault(0);
-            direccionActual = '+';
+            direccionActual = 1;
             objetoActual = nombreObjetos.ElementAtOrDefault(0);
             nombrePartes = new List<string>(t.objetos[objetoActual].partes.Keys);
             parteActual = nombrePartes.ElementAtOrDefault(0);
-            displayTemporal();
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
@@ -113,6 +116,7 @@ namespace TShape
             {
                 return;
             }
+
             //Movement 
             if (KeyboardState.IsKeyDown(Keys.W))
             {
@@ -157,230 +161,58 @@ namespace TShape
 
             if (KeyboardState.IsKeyDown(Keys.X))
             {
-                if (sujetoActual == "Objeto")
+                if (selected_transformation == "Rotacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].rotate(15f * (float)args.Time, 0f, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].rotate(-15f * (float)args.Time, 0f, 0f);
-                        }
-                    }
-                    if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].move(speed * (float)args.Time, 0f, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].move(-1f * speed * (float)args.Time, 0f, 0f);
-                        }
-                    }
-                    if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].scale(1f + (float)args.Time, 1f, 1f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].scale(1f - (float)args.Time, 1f, 1f);
-                        }
-                    }
-                } else if (sujetoActual == "Parte")
+                    target.rotate(target.CM, (float)direccionActual * 15f * (float)args.Time, 0f, 0f);
+                }
+                else if (selected_transformation == "Traslacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(15f * (float)args.Time, 0f, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(-15f * (float)args.Time, 0f, 0f);
-                        }
-                    }else if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(speed * (float)args.Time, 0f, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(-1f * speed * (float)args.Time, 0f, 0f);
-                        }
-                    }else if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f + (float)args.Time, 1f, 1f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f - (float)args.Time, 1f, 1f);
-                        }
-                    }
+                    target.move(direccionActual * speed * (float)args.Time, 0f, 0f);
+                }
+                else if (selected_transformation == "Escalacion")
+                {
+                    target.scale(1f + (float)direccionActual * (float)args.Time, 1f, 1f);
                 }
             }
 
             if (KeyboardState.IsKeyDown(Keys.Y))
             {
-                if (sujetoActual == "Objeto")
+                if (selected_transformation == "Rotacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].rotate(0f, 15f * (float)args.Time, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].rotate(0f, -15f * (float)args.Time, 0f);
-                        }
-                    }else if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].move(0f, speed * (float)args.Time, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].move(0f, -1f * speed * (float)args.Time, 0f);
-                        }
-                    }else if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].scale(1f, 1f + (float)args.Time, 1f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].scale(1f, 1f - (float)args.Time, 1f);
-                        }
-                    }
-                }else if (sujetoActual == "Parte")
+                    target.rotate(target.CM, 0f, (float)direccionActual * 15f * (float)args.Time, 0f);
+                }
+                else if (selected_transformation == "Traslacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(0f, 15f * (float)args.Time, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(0f, -15f * (float)args.Time, 0f);
-                        }
-                    }else if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(0f, speed * (float)args.Time, 0f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(0f, -1f * speed * (float)args.Time, 0f);
-                        }
-                    }else if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f, 1f + (float)args.Time, 1f);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f, 1f - (float)args.Time, 1f);
-                        }
-                    }
+                    target.move(0f, (float)direccionActual * speed * (float)args.Time, 0f);
+
+                }
+                else if (selected_transformation == "Escalacion")
+                {
+                    target.scale(1f, 1f + (float)direccionActual * (float)args.Time, 1f );
                 }
             }
 
             if (KeyboardState.IsKeyDown(Keys.Z))
             {
-                if (sujetoActual == "Objeto")
+                if (selected_transformation == "Rotacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].rotate(0f, 0f, 15f * (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].rotate(0f, 0f, -15f * (float)args.Time);
-                        }
-                    }
-                    if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].move(0f, 0f, speed * (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].move(0f, 0f, -1f * speed * (float)args.Time);
-                        }
-                    }
-                    if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].scale(1f, 1f, 1f + (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].scale(1f, 1f, 1f - (float)args.Time);
-                        }
-                    }
+                    target.rotate(target.CM, 0f, 0f, (float)direccionActual * 15f * (float)args.Time);
                 }
-                if (sujetoActual == "Parte")
+                else if (selected_transformation == "Traslacion")
                 {
-                    if (selected_transformation == "Rotacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(0f, 0f, 15f * (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].rotate(0f, 0f, -15f * (float)args.Time);
-                        }
-                    }
-                    if (selected_transformation == "Traslacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(0f, 0f, speed * (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].move(0f, 0f, -1f * speed * (float)args.Time);
-                        }
-                    }
-                    if (selected_transformation == "Escalacion")
-                    {
-                        if (direccionActual == '+')
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f, 1f, 1f + (float)args.Time);
-                        }
-                        else
-                        {
-                            t.objetos[objetoActual].partes[parteActual].scale(1f, 1f, 1f - (float)args.Time);
-                        }
-                    }
+                    target.move(0f, 0f, (float)direccionActual * speed * (float)args.Time);
+                }
+                else if (selected_transformation == "Escalacion")
+                {
+                    target.scale(1f, 1f, 1f + (float)direccionActual*(float)args.Time);
                 }
             }
 
             if (KeyboardState.IsKeyPressed(Keys.V))
             {
-                if (direccionActual == '+') direccionActual = '-';
-                else direccionActual = '+';
+                if (direccionActual == 1) direccionActual = -1;
+                else direccionActual = 1;
 
-                Console.Clear();
                 displayTemporal();
             }
 
@@ -394,7 +226,6 @@ namespace TShape
                 {
                     selected_transformation = nombreEfectos.ElementAt(0);
                 }
-                Console.Clear();
                 displayTemporal();
 
             }
@@ -409,7 +240,9 @@ namespace TShape
                 {
                     sujetoActual = sujetosDePrueba.ElementAt(0);
                 }
-                Console.Clear();
+                if (sujetoActual == "Escenario") target = t;
+                else if (sujetoActual == "Objeto") target = t.objetos[objetoActual];
+                else if (sujetoActual == "Parte") target = t.objetos[objetoActual].partes[parteActual];
                 displayTemporal();
 
             }
@@ -425,8 +258,8 @@ namespace TShape
                     objetoActual = nombreObjetos.ElementAt(0);
                 }
                 nombrePartes = new List<string>(t.objetos[objetoActual].partes.Keys);
+                if (sujetoActual == "Objeto") target = t.objetos[objetoActual];
                 parteActual = nombrePartes.ElementAt(0);
-                Console.Clear();
                 displayTemporal();
             }
 
@@ -440,7 +273,7 @@ namespace TShape
                 {
                     parteActual = nombrePartes.ElementAt(0);
                 }
-                Console.Clear();
+                if (sujetoActual == "Parte") target = t.objetos[objetoActual].partes[parteActual];
                 displayTemporal();
 
             }
@@ -449,12 +282,13 @@ namespace TShape
 
         private void displayTemporal()
         {
+            Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine("Sujeto de Pruebas(M): " + sujetoActual);
             Console.WriteLine("Objeto(O): " + objetoActual);
             Console.WriteLine("Parte(L): " + parteActual);
             Console.WriteLine("Efecto(T): " + selected_transformation);
-            Console.WriteLine("Direccion(V): " + direccionActual);
+            Console.WriteLine("Direccion(V): " + direccionActual.ToString()) ;
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)

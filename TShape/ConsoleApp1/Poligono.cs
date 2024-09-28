@@ -8,7 +8,8 @@ namespace TShape
     {
         public float[] vertices;
         public float posX,posY,posZ=0.0f;
-        private Matrix4 pos;
+        public Matrix4 pos;
+        private Matrix4 traslation,rotation,scalation;
 
         private int VertexBufferObject;
         private int VertexArrayObject;
@@ -33,7 +34,7 @@ namespace TShape
             vertices[18] = v3x; vertices[19] = v3y; vertices[20] = v3z;
             vertices[21] = v3cR; vertices[22] = v3cG; vertices[23] = v3cB;
 
-            this.posX = posX;this.posY = posY;this.posZ = posZ;
+            this.posX = posX; this.posY = posY; this.posZ = posZ;
             Cargar(new StreamingContext());
         }
         [OnDeserialized]
@@ -52,14 +53,39 @@ namespace TShape
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.EnableVertexAttribArray(1);
             pos = Matrix4.CreateTranslation(posX, posY, posZ);
+            this.traslation=this.rotation=this.scalation=Matrix4.Identity;
         }
 
-        public void Draw(Shader shader, Matrix4 model)
+        public void Draw(Shader shader)
         {
             GL.BindVertexArray(VertexArrayObject);
             shader.Use();
-            shader.SetMatrix4("model", pos * model);
+            shader.SetMatrix4("model", pos * scalation * rotation * traslation );
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+        }
+
+        public void scale(float x = 1.0f, float y = 1.0f, float z = 1.0f)
+        {
+            this.scalation = this.scalation*Matrix4.CreateScale(x,y,z);
+        }
+
+        public void move(float x = 0.0f, float y = 0.0f, float z = 0.0f)
+        {
+            this.traslation = Matrix4.CreateTranslation(x, y, z);
+        }
+
+        public void rotate(Matrix4 CM, float x = 0.0f, float y = 0.0f, float z = 0.0f)
+        {
+            this.rotation = rotation*
+                     Matrix4.CreateRotationX(MathHelper.DegreesToRadians(x)) *
+                     Matrix4.CreateRotationY(MathHelper.DegreesToRadians(y)) *
+                     Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(z));
+
+        }
+
+        public void setPos(float x, float y, float z) 
+        {
+            this.pos =  Matrix4.CreateTranslation(posX + x, posY + y, posZ + z);
         }
     }
 }

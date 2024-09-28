@@ -1,54 +1,57 @@
 ﻿using Newtonsoft.Json;
 using OpenTK.Mathematics;
-using System.Runtime.Serialization;
 
 namespace TShape
 {
     [JsonObjectAttribute]
-    public class Objeto
+    public class Objeto:InterfazObjeto
     {
         public Dictionary<string, Parte> partes=new();
         public float posX, posY, posZ = 0.0f;
-        private Matrix4 Traslation, Rotation, Scalation;
+        public Matrix4 CM;
 
+        Matrix4 InterfazObjeto.CM => this.CM;
         public Objeto(float posX = 0.0f, float posY = 0.0f, float posZ = 0.0f)
         {
             this.posX = posX; this.posY = posY; this.posZ = posZ;
-            GenMatrix(new StreamingContext());
+            CM = Matrix4.CreateTranslation(posX, posY, posZ);
         }
-        [OnDeserialized]
-        private void GenMatrix(StreamingContext context)
-        {
-            this.Traslation = Matrix4.CreateTranslation(posX, posY, posZ);
-            this.Rotation = this.Scalation = Matrix4.Identity;
-        }
-        public void Draw(Shader shader, Matrix4 model)
+        public void Draw(Shader shader)
         {
             foreach (Parte parte in partes.Values)
             {
-                parte.Draw(shader, Scalation * Rotation * Traslation * model);
+                parte.Draw(shader);
             }
         }
         public void setPos(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         {
-            Traslation = Matrix4.CreateTranslation(x, y, z);
+            foreach (Parte parte in partes.Values)
+            {
+                parte.setPos(this.posX+x, this.posY+y, this.posZ+z);
+            }
         }
         public void scale(float x = 1.0f, float y = 1.0f, float z = 1.0f)
         {
-            Scalation = Scalation * Matrix4.CreateScale(x, y, z);
+            foreach (Parte parte in partes.Values)
+            {
+                parte.scale(x, y, z);
+            }
         }
 
         public void move(float x = 0.0f, float y = 0.0f, float z = 0.0f)
         {
-            Traslation = Traslation * Matrix4.CreateTranslation(x, y, z);
+            foreach (Parte parte in partes.Values)
+            {
+                parte.move(x,y,z);
+            }
         }
 
-        public void rotate(float x = 0.0f, float y = 0.0f, float z = 0.0f)
+        public void rotate(Matrix4 CM, float x = 0.0f, float y = 0.0f, float z = 0.0f)
         {
-            Rotation = Rotation
-                     * Matrix4.CreateRotationX(MathHelper.DegreesToRadians(x))
-                     * Matrix4.CreateRotationY(MathHelper.DegreesToRadians(y))
-                     * Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(z));
+            foreach (Parte parte in partes.Values)
+            {
+                parte.rotate(CM, x, y, z);
+            }
         }
     }
 }
